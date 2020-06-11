@@ -2,5 +2,6 @@
 .DS_Store
 .git
 .idea
+.idea/vcs.xml
 simplemooc/simplemooc_settings.py
 media
