@@ -10,45 +10,31 @@ $ python -m venv nomedoambiente
 
 # Deploy em ambiente de produção
 
-Foi realizados estudos para implementar o projeto em um ambiente de produção, 
+Foi realizados estudos para implementar o projeto em um ambiente de produção diferenciado, 
 o deploy foi realizado em um Fedora 32, utilizando Docker, Gunicorn, Nginx, PostgreSQL.
 
 * Rotina utilizada no preparo do ambiente de produção
-1. Preparar uma imagem com os requisitos de serviços:
-	- Baixar a imagem do centos 8 do repositório oficial do docker.
-	- Criar um container, atualizar o linux no container e instalar o nano.
-	- Instalar o python 3: dnf install python3
-	- Instalar o gunicorn no container: pip3 install gunicorn
-	- comitar o container para uma nova imagem (Criei com o nome "centos-to-django"")
-2. Cria o volume para aplicação:
-	- docker volume create django-app01
-	- Por padrão os volumes ficam em /var/lib/docker/volumes/__data/django-app01>
-3. Iniciar um container com volume do app:
-	- docker run -d -p 8000:8000 --name django-app01 --mount source=django-app01,target=/django-app01 centos-to-django
-4. Preparar e rodar a aplicação:
-	- Clonar a aplicação no diretório do host que corresponde ao volume.
+1. Construir uma imagem com os requisitos mínimos usando o Dockerfile da pasta deploy, usar o comando "docker build" no mesmo diretório do arquivo Dockerfile:
+	- $ docker build -t centos-to-django .
+2. Cria o volume para aplicação e ajustar configurações necessárias:
+	- docker volume create django-app-02
+	- aplicar as permissões no diretório do volume no host para o usuário 
+	- Por padrão os volumes ficam em /var/lib/docker/volumes/__data/django-app-02
+    - Clonar a aplicação no volume criado.
 	- Configurar o postgresql do host para conversar com o container(liberar ip no pg_hba.conf)
 	- Configurar o settings.py (Variáveis e banco)
-	- Criei um arquivo run-deploy.sh na pasta deploy no mesmo diretório do app, com o conteúdo a seguir:
-		
-	\#!/usr/bin/env bash<br>
-	cd /django-app01/simplemooc/<br>
-	NOW=$(TZ=":America/Sao_Paulo" date +"%d-%m-%Y_%H-%M-%S")<br>
-	LOG=/django-app01/deploy/logs/logs-deploy-${NOW}.log<br>
-	echo "==================== Encerrando os processos gunicorn ====================" >> $LOG<br>
-	ps aux | grep gunicorn | awk '{print $2;}' | xargs kill -9 2>/dev/null >> $LOG<br>
-	echo "==================== Instalando requerimentos ====================" >> $LOG<br>
-	pip3 install -r requeriments.txt >> $LOG<br>
-	echo "==================== Rodando migrações do banco de dados ====================" >> $LOG<br>
-	python3 manage.py migrate >> $LOG<br>
-	echo "==================== Gerando arquivos estáticos ====================" >> $LOG<br>
-	python3 manage.py collectstatic --noinput >> $LOG<br>
-	echo "==================== Iniciando o gunicorn ====================" >> $LOG<br>
-	gunicorn --bind :8000 --workers 3 simplemooc.wsgi:application >> $LOG<br>
-
-	- Rodar o arquivo run-deploy.sh: docker exec -d -w /django-app01/deploy/ django-app01 ./run-deploy.sh
+	- Conferir se os serviços utilizados estão onlines: Postgres, Nginx
+3. Foi utilizado a aplicação Portainer para gerenciar o docker, use as seguintes opções na criação do container:
+    - Usar a imagem centos-to-django
+    - port publishing: 8002:8002
+    - EntryPoint: deploy/run-app.sh
+    - workking dir: /django-app-02/simplemooc
+    - Console: (-i -t)
+    - Volume no container: /django-app-02
+4. Configurar NGINX:
 	- Configurar o virtualhost no nginx (É importante verificar a permissão dos diretos dos arquivos estáticos, toda a arvore deve estar acessível).
-	
+	- Recarregar configurações do nginx: nginx -s reload
+
 # Comandos docker estudados
 - Baixando uma imagem docker/centos do repositório oficial.<br>
 $ docker pull centos
