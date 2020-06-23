@@ -1,0 +1,71 @@
+1 - Instalar o python:
+	* Baixar o python do site oficial python.org;
+	* Instalar o python usando a opção customizada marcando as seguintes opções:
+		- Instalar para todos os usuários;
+		- Adicionar python às variáveis de ambiente;
+		- Instalar o python no C:\<pasta do python> para facilitar o uso;
+2 - Configurar um ambiente virtual para aplicação:
+	* $ python -m venv <nome do ambiente>
+	* Ativar o ambiente virtual executando o arquivo bat no terminal:
+		- $ <pasta do ambiente>\Scripts\activate.bat
+	* Atualizar o PIP:
+		- $ python -m pip install --upgrade pip
+3 - Criar um diretório no C:\ e colocar a aplicação.
+	* Se tiver utilizando GIT, para facilitar pode ser instalado um terminal do git que facilita o uso,
+	temos como exemplo o: https://git-scm.com/download/win. Ai basta fazer um "git clone" do projeto no C:\.
+4 - Instalar o banco de dados e um cliente para gerenciar o banco. Sugestão: PostgreSQL e DBever.
+5 - Instalar os requerimentos da aplicação e gerar os arquivos estáticos:
+	* $ pip install -r requirements.txt
+	* $ python manage.py collectstatic
+6 - Instalar o WFASTCGI que será utilizado pelo IIS:
+	* $ pip install wfastcgi
+	* Por segurança, garanta que o wfastcgi esteja atualizado: $ pip install wfastcgi --upgrade
+7 - Rodar a aplicação e testar pela url "httpl://127.0.0.1:8000"
+	* $ python manage.py runserver
+
+8 - Instalar o IIS:
+	* Acesse o painel de controle;
+	* No campo de busca, pesquise por "Recursos do windows";
+	* Nos resultados clique em "Ativar ou desativar recursos do windows";
+	* Marque a opção "Serviço de informação para internet" (IIS), certifique que a opção CGI esteja marcada,
+	a opção CGI fica dentro "Serviços da World Wide Web > Recursos de Desenvolvimento de Aplicativos > CGI".
+	* Verifique no navegar se o IIS esta respondendo: http://localhost
+9 - Configurar o IIS para servir aplicativos Django:
+	* Configurar o FASTCGI no IIS:
+		- Acesse "Ferramentas Administrativas do Windows" em seguida "Gerenciador dos Serviços de Informações da Internet(IIS)";
+		- Selecione o servidor no menu esquerdo;
+		- Clique na opção "Configuração de FastCGI";
+		- Do lado direito, clique em "Adicionar Aplicativos";
+		- Informe o caminho completo do executável do python do ambiente da aplicação: <ambiente da aplicação>\Scripts\python.exe;
+		- Informe em Argumentos, o caminho para o wfastcgi.py: <ambiente da aplicação>\Lib\site-packages\wfastcgi.py;
+		- Na guia geral adicione as variáveis de ambiente:
+			* Nome: DJANGO_SETTINGS_MODULE valor: simplemooc.settings
+			* Nome: PYTHONPATH valor: <dirtório da aplicação>
+			* Nome: WSGI_HANDLER valor: simplemooc.wsgi.application
+	* Alterar a porta do site padrão:
+		- Clique com botão direito sobre o site padrão e vai na opção "Editar Associação" e informe a porta 8080.
+	* Adicionar um novo site no IIS:
+		- Clicar com botão direito na opção "Sites" e em "Adicionar site...";
+		- Informar nome e caminho da aplicação;
+		- Informar a porta 80;
+		- Caso ainda não possuir um nome de domínio, o nome do host pode ficar em branco;
+	* Adicionar um mapeamento de manipulador FastCGI ao site para as solicitações sejam processadas pelo aplicativo Django:
+		- Expanda a pasta sites do lado esquerdo;
+		- Selecione o site;
+		- Abra a opção "Mapeamentos de manipulador";
+		- À direita, em "Ações", clique em "Adicionar mapeamento de módulo";
+		- Na caixa "Caminho da solicitação", digite um asterisco: *;
+		- Clique na seta no lado direito da caixa "Módulo" e selecione "Módulo FastCgi";
+		- Na caixa "Executável", digite o seguinte:
+			* <ambiente da aplicação>\Scripts\python.exe|<ambiente da aplicação>\Lib\site-packages\wfastcgi.py;
+		- Na caixa "Nome", digite Django Handler (pode ser qualquer nome);
+		- Clique no botão "Restrições da solicitação" e desmarque a caixa de seleção "Invocar manipulador somente...";
+		- Fecha as telas no botão OK;
+		- Quando solicitado "Deseja criar um aplicativo FastCGI para este executável?" clique em "Não" desde que criamos o aplicativo anteriormente.
+	* Configurar arquivos estáticos e pastas de arquivos(media):
+		- Clique com botão direito sobre o nome do site na esquerda para cada pasta e adiciona um diretório virtual;
+		- Informe a alias como "static" e informe o caminho da pasta static no projeto;
+		- Informe a alias como "media" e informe o caminho da pasta media no projeto;
+		- Após criar o diretório virtual, selecione ele no menu da esquerda, acesse a opção "Mapeamento de Manipulador" e remova o Django Handler
+	* Recomenda-se parar o servidor clicando com o botão direito sobre ele no menu a esquerda, e iniciar novamente.
+	* Pode testar a aplicação: http://localhost

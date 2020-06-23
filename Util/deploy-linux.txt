@@ -1,0 +1,24 @@
+Foi realizados estudos para implementar o projeto em um ambiente de produção diferenciado,
+o deploy foi realizado em um Fedora 32, utilizando Docker, Gunicorn, Nginx, PostgreSQL.
+
+* Rotina utilizada no preparo do ambiente de produção
+1. Construir uma imagem com os requisitos mínimos usando o Dockerfile da pasta deploy, usar o comando "docker build" no mesmo diretório do arquivo Dockerfile:
+	- $ docker build -t centos-to-django .
+2. Cria o volume para aplicação e ajustar configurações necessárias:
+	- docker volume create django-app-02
+	- aplicar as permissões no diretório do volume no host para o usuário
+	- Por padrão os volumes ficam em /var/lib/docker/volumes/__data/django-app-02
+    - Clonar a aplicação no volume criado.
+	- Configurar o postgresql do host para conversar com o container(liberar ip no pg_hba.conf)
+	- Configurar o settings.py (Variáveis e banco)
+	- Conferir se os serviços utilizados estão onlines: Postgres, Nginx
+3. Foi utilizado a aplicação Portainer para gerenciar o docker, use as seguintes opções na criação do container:
+    - Usar a imagem centos-to-django
+    - port publishing: 8002:8002
+    - EntryPoint: deploy/run-app.sh
+    - workking dir: /django-app-02/simplemooc
+    - Console: (-i -t)
+    - Volume no container: /django-app-02
+4. Configurar NGINX:
+	- Configurar o virtualhost no nginx (É importante verificar a permissão dos diretos dos arquivos estáticos, toda a arvore deve estar acessível).
+	- Recarregar configurações do nginx: nginx -s reload

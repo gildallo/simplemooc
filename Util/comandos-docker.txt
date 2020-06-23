@@ -1,0 +1,38 @@
+- Baixando uma imagem docker/centos do repositório oficial.<br>
+$ docker pull centos
+- Listar as imagens disponíveis no pc<br>
+$ docker image ls
+- Criar um container com opção interativa<br>
+$ docker run -it <nome-da-imagem>
+- Listar Containers ativos<br>
+$ docker ps
+- Lista todos os containers(ativados e desativados)<br>
+$ docker ps -a
+- Acessar um container em execução<br>
+$ docker attach <id-ou-apelido>
+- Salvar alterações realizadas na imagem<br>
+$ docker commit <ID/apelido> <nome-da-nova-imagem>
+
+- Remover imagem local<br>
+$ docker rmi ID_ou_nome_da_imagem
+- Criar um container com apelido<br>
+$ docker run --name <apelido> <nome-da-imagem>
+- Remover um container<br>
+$ docker rm <id-ou-apelido>
+- Informações de uso de hardware do container<br>
+$ docker stats <id-ou-apelido>
+- Informações uteis do container<br>
+$ docker inspect <id-ou-apelido>
+- Mapeando uma porta do container com o host<br>
+$ docker run -it -p 8080:80 <id-ou-apelido>
+- Executar container em segundo plano(Parametro -d)<br>
+$ docker run -d <nome-da-imagem>
+- Executar comando em modo interativo sem estar dentro do container<br>
+$ docker exec -it <id-ou-apelido> <comando>
+- Limpar o que não é usado<br>
+$ docker system prune
+- Criando Volume<br>
+$ docker volume create django-app01
+Observação: Os volume são criados por padrão no diretório do docker: /var/lib/docker/volumes/
+- Iniciando um container com um volume<br>
+$ docker run -d --name django-app01 --mount source=app01,target=/django-app01 centos-to-django
